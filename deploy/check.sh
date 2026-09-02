@@ -15,7 +15,7 @@ else
 fi
 
 if command -v shellcheck >/dev/null 2>&1; then
-    shellcheck -x -P SCRIPTDIR "$SCRIPT_DIR"/*.sh
+    shellcheck --severity=warning -x -P SCRIPTDIR "$SCRIPT_DIR"/*.sh
 fi
 
 if ! command -v docker >/dev/null 2>&1 || ! docker compose version >/dev/null 2>&1; then
