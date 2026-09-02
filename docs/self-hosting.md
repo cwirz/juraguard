@@ -3,7 +3,7 @@
 This deployment supports a fresh Debian or Ubuntu server, including a Hetzner Cloud VPS. It runs one Juraguard application container and Traefik on one host. SQLite is the default; an external PostgreSQL URL is optional. Cloud mode is operator-only and is not enabled by this self-host package.
 
 > [!WARNING]
-> The public source mirror, `v0.1.0` image, and installer endpoint are not published yet. The commands in this guide describe the first release and will not work until those assets are published and verified.
+> The public source mirror is available, but the `v0.1.0` image and installer endpoint are not published yet. Release commands in this guide will not work until those assets are published and verified.
 
 ## Before installing
 

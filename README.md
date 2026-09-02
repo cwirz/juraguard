@@ -6,10 +6,10 @@ Juraguard is a small AGPL-3.0 Django application: one container, SQLite, static 
 
 Juraguard's managed service is in free public beta. Self-hosting is prerelease; container deployments are the only supported self-host path.
 
-[GitLab](https://gitlab.pyango.ch/pyango/juraguard/monorepo) is the authoritative development and release repository. The planned [GitHub mirror](https://github.com/cwirz/juraguard) will be the public contribution surface; it is not published yet.
+[GitLab](https://gitlab.pyango.ch/pyango/juraguard/monorepo) is the authoritative development and release repository. The [GitHub mirror](https://github.com/cwirz/juraguard) is the public contribution surface.
 
 > [!WARNING]
-> The public source mirror, `v0.1.0` image, and installer are not published yet. The image and production-install commands below will not work until the first release. A source checkout from GitLab is currently the only usable self-host path.
+> The `v0.1.0` image and installer are not published yet. The image and production-install commands below will not work until the first release. A source checkout from GitHub or GitLab is the current self-host path.
 
 ## Run from source
 
@@ -256,7 +256,7 @@ The `ci-helpers` documentation belongs to shared, vendored Pyango CI tooling. So
 
 ## Contributing
 
-After the GitHub mirror is published, issues and pull requests will be welcome there. See [CONTRIBUTING.md](CONTRIBUTING.md) for the project workflow and [SUPPORT.md](SUPPORT.md) for support boundaries.
+Issues and pull requests are welcome on GitHub. See [CONTRIBUTING.md](CONTRIBUTING.md) for the project workflow and [SUPPORT.md](SUPPORT.md) for support boundaries.
 
 ## License
 
