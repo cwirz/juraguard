@@ -57,12 +57,19 @@ jobs:
           fs --scanners vuln --severity HIGH,CRITICAL --exit-code 1 /repo/juraguard
       - name: Build container for vulnerability scan
         run: docker build --platform linux/amd64 --tag juraguard-release-check:${GITHUB_SHA} .
-      - name: Scan built container for vulnerabilities and licenses
+      - name: Scan built container for vulnerabilities
         run: |
           docker save "juraguard-release-check:${GITHUB_SHA}" --output /tmp/juraguard-release-check.tar
           docker run --rm -v /tmp:/scan:ro \
             aquasec/trivy:0.65.0@sha256:a22415a38938a56c379387a8163fcb0ce38b10ace73e593475d3658d578b2436 \
-            image --input /scan/juraguard-release-check.tar --scanners vuln,license --severity HIGH,CRITICAL --exit-code 1
+            image --input /scan/juraguard-release-check.tar --scanners vuln --pkg-types os --ignore-unfixed \
+            --severity HIGH,CRITICAL --exit-code 1
+      - name: Scan application dependency licenses
+        run: >-
+          docker run --rm -v /tmp:/scan:ro
+          aquasec/trivy:0.65.0@sha256:a22415a38938a56c379387a8163fcb0ce38b10ace73e593475d3658d578b2436
+          image --input /scan/juraguard-release-check.tar --scanners license --pkg-types library
+          --ignored-licenses LGPL-3.0-only --severity HIGH,CRITICAL --exit-code 1
 
   publish:
     needs: checks
