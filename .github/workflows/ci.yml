@@ -41,6 +41,7 @@ jobs:
       - name: Scan repository for secrets
         run: >-
           docker run --rm -v "${GITHUB_WORKSPACE}:/repo:ro"
+           -e GIT_CONFIG_COUNT=1 -e GIT_CONFIG_KEY_0=safe.directory -e GIT_CONFIG_VALUE_0=/repo
            ghcr.io/gitleaks/gitleaks:v8.28.0@sha256:cdbb7c955abce02001a9f6c9f602fb195b7fadc1e812065883f695d1eeaba854
            detect --source=/repo --config=/repo/.gitleaks.toml --no-banner --redact
       - name: Scan dependencies for vulnerabilities
