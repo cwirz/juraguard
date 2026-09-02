@@ -1,0 +1,87 @@
+deploy-hetzner-instance:
+  stage: setup
+  image: ${CI_REGISTRY_IMAGE}/ci-helpers/docker:latest
+  retry: 2
+  rules:
+    - if: $CI_MERGE_REQUEST_IID && $CI_MERGE_REQUEST_LABELS =~ /(^|,)review-app(,|$)/
+  tags:
+    - build-docker
+  variables:
+    HCLOUD_TOKEN: $HETZNER_API_KEY
+    HCLOUD_SERVER_NAME: test-$CI_PROJECT_TITLE-$CI_MERGE_REQUEST_IID
+  before_script:
+    - bash ./ci-helpers/scripts/setup_ssh_keys.sh
+    - hcloud ssh-key create --name review-app --public-key-from-file ~/.ssh/id_rsa.pub || true
+  script:
+    - !reference [ .hetzner-scripts, check-server-status ]
+    - !reference [ .hetzner-scripts, cleanup-server ]
+    - export BRANCH_HASH=$(bash ./ci-helpers/scripts/generate_branch_slug.sh "$CI_COMMIT_REF_SLUG")
+    - echo "BRANCH_HASH is $BRANCH_HASH (from $CI_COMMIT_REF_SLUG)"
+    - |
+      curl --request POST --header "PRIVATE-TOKEN: $GITLAB_ACCESS_TOKEN" \
+        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/variables" \
+        --form "key=BRANCH_HASH_${CI_MERGE_REQUEST_IID}" --form "value=$BRANCH_HASH"
+      echo "Stored BRANCH_HASH_${CI_MERGE_REQUEST_IID}=$BRANCH_HASH as GitLab CI/CD variable"
+    - bash ./ci-helpers/hetzner/setup_firewall.sh general
+    - bash ./ci-helpers/hetzner/create_server.sh ${HCLOUD_SERVER_NAME} $HETZNER_SERVER_SIZE
+    - export SERVER_IP=$(hcloud server ip ${HCLOUD_SERVER_NAME})
+    - export SUBDOMAIN="$BRANCH_HASH.$CI_PROJECT_TITLE"
+    - bash ./ci-helpers/hetzner/setup_dns.sh
+    - export SUBDOMAIN="*.$BRANCH_HASH.$CI_PROJECT_TITLE"
+    - bash ./ci-helpers/hetzner/setup_dns.sh
+    - bash ./ci-helpers/hetzner/setup_authentik.sh ${CI_PROJECT_TITLE}-${CI_MERGE_REQUEST_IID} auth.${BRANCH_HASH}.${DOMAIN}
+    - bash ./ci-helpers/hetzner/setup_ssh_connection.sh $SERVER_IP "$SSH_KEYS"
+    - scp -o StrictHostKeyChecking=no ./ci-helpers/hetzner/setup.sh root@$SERVER_IP:/tmp/setup.sh
+    - |
+      echo "Running setup script..."
+      ssh -o StrictHostKeyChecking=no root@$SERVER_IP \
+        GITLAB_ACCESS_TOKEN="$GITLAB_ACCESS_TOKEN" \
+        CI_ENVIRONMENT_SLUG="$CI_ENVIRONMENT_SLUG" \
+        CI_PROJECT_ID="$CI_PROJECT_ID" \
+        NETBIRD_SETUP_KEY="$NETBIRD_SETUP_KEY" \
+        CI_MERGE_REQUEST_IID="$CI_MERGE_REQUEST_IID" \
+        GITLAB_RUNNER_TOKEN="$GITLAB_RUNNER_TOKEN" \
+        CI_SERVER_URL="$CI_SERVER_URL" \
+        CI_API_V4_URL="$CI_API_V4_URL" \
+        'bash /tmp/setup.sh </dev/null'
+    - bash ./ci-helpers/hetzner/attach_firewall.sh general ${HCLOUD_SERVER_NAME}
+    - hcloud server add-label ${HCLOUD_SERVER_NAME} setup=complete
+    - echo "HETZNER_ENV_URL=https://$BRANCH_HASH.$DOMAIN" >> $CI_PROJECT_DIR/hetzner.env
+  artifacts:
+    reports:
+      dotenv: hetzner.env
+  environment:
+    name: test/$CI_PROJECT_TITLE/$CI_MERGE_REQUEST_IID
+    url: $HETZNER_ENV_URL
+    on_stop: stop-hetzner-instance
+    auto_stop_in: 5 hours
+  resource_group: review-infrastructure/$CI_MERGE_REQUEST_IID
+  needs:
+    - ci-helpers-mr
+  dependencies: [ ]
+
+stop-hetzner-instance:
+  extends: deploy-hetzner-instance
+  stage: teardown
+  variables:
+    GIT_STRATEGY: none
+  before_script:
+    - export STOP_CHECKOUT=$(mktemp -d)
+    - |
+      STOP_ARCHIVE=$(mktemp)
+      if ! curl --fail --location --header "PRIVATE-TOKEN: $GITLAB_ACCESS_TOKEN" \
+        "$CI_API_V4_URL/projects/$CI_PROJECT_ID/repository/archive.tar.gz?sha=$CI_COMMIT_SHA" \
+        --output "$STOP_ARCHIVE"; then
+        curl --fail --location --header "PRIVATE-TOKEN: $GITLAB_ACCESS_TOKEN" \
+          "$CI_API_V4_URL/projects/$CI_PROJECT_ID/repository/archive.tar.gz?sha=$CI_DEFAULT_BRANCH" \
+          --output "$STOP_ARCHIVE"
+      fi
+      tar -xzf "$STOP_ARCHIVE" --strip-components=1 -C "$STOP_CHECKOUT"
+      rm "$STOP_ARCHIVE"
+    - cd "$STOP_CHECKOUT"
+  script:
+    - !reference [ .hetzner-scripts, cleanup-server ]
+  environment:
+    name: test/$CI_PROJECT_TITLE/$CI_MERGE_REQUEST_IID
+    action: stop
+  when: manual

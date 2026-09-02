@@ -1,0 +1,10 @@
+{% extends "gateway/base.html" %}
+{% block title %}OAuth connection error · {{ product_name }}{% endblock %}
+{% block content %}
+<section class="form-shell" role="alert" aria-labelledby="oauth-error-heading">
+  <p class="eyebrow">Connection stopped</p>
+  <h1 id="oauth-error-heading">OAuth connection error</h1>
+  <p class="lede-small">{{ message }}</p>
+  <a class="button secondary" href="{% url 'dashboard' %}">Return to dashboard</a>
+</section>
+{% endblock %}

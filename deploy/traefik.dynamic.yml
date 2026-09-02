@@ -1,0 +1,14 @@
+http:
+  routers:
+    juraguard:
+      rule: Host(`__JURAGUARD_DOMAIN__`)
+      entryPoints:
+        - websecure
+      service: juraguard
+      tls:
+        certResolver: letsencrypt
+  services:
+    juraguard:
+      loadBalancer:
+        servers:
+          - url: http://juraguard:8000

@@ -1,0 +1,6 @@
+.initialize:
+  stage: initialize
+  tags:
+    - build
+  script:
+    - echo "Initializing"

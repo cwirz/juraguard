@@ -1,0 +1,173 @@
+{% extends "gateway/base.html" %}
+{% block title %}Juraguard — One governed endpoint for remote MCP{% endblock %}
+{% block content %}
+<section class="hero landing-shell" aria-labelledby="hero-heading">
+  <div class="hero-copy">
+    <p class="eyebrow">Remote MCP, without the credential sprawl</p>
+    <h1 id="hero-heading">Your agent needs tools.<br><em>Not every tool.</em></h1>
+    <p class="lede">Put remote MCP providers behind one Streamable HTTP endpoint. Juraguard gives AI clients compact search and call controls, loads schemas only when needed, and keeps provider credentials on the server.</p>
+    <div class="actions">
+      {% if user.is_authenticated %}
+        <a class="button primary" href="{% url 'dashboard' %}">Open dashboard</a>
+      {% elif cloud_mode %}
+        <a class="button primary" href="{% url 'account_signup' %}">Join the free beta</a>
+      {% else %}
+        <span>Use the private setup link printed during installation.</span>
+      {% endif %}
+      <a class="button secondary" href="{% url 'docs' %}">Connect a client</a>
+    </div>
+  </div>
+  <aside class="hero-contrast" aria-label="Juraguard in one comparison">
+    <p class="section-number">Without a gateway</p>
+    <p class="contrast-big">Hundreds</p>
+    <p>of definitions and scattered provider secrets competing for attention.</p>
+    <span aria-hidden="true">↓</span>
+    <p class="section-number">With Juraguard</p>
+    <p class="contrast-big">One</p>
+    <p>endpoint with a deliberately small control surface.</p>
+  </aside>
+</section>
+
+<section class="landing-section problem-section" aria-labelledby="problem-heading">
+  <div class="section-intro">
+    <p class="section-number">01 — The problem</p>
+    <h2 id="problem-heading">More connections should not mean more exposure.</h2>
+  </div>
+  <div class="problem-ledger">
+    <p><strong>Tool overload</strong><span>Agents should not receive hundreds of tool definitions before they know which one they need.</span></p>
+    <p><strong>Secret sprawl</strong><span>Provider credentials do not belong in every client config, prompt path, or developer machine.</span></p>
+    <p><strong>Scattered control</strong><span>Access should be revocable and reconnectable in one place—not hunted across clients.</span></p>
+  </div>
+</section>
+
+<section class="principles landing-section" id="how-it-works" aria-labelledby="mechanism-heading">
+  <div class="section-intro">
+    <p class="section-number">02 — The mechanism</p>
+    <h2 id="mechanism-heading">Small at the edge.<br>Capable behind it.</h2>
+  </div>
+  <ol class="mechanism-list">
+    <li><span>01</span><div><h3>Connect once</h3><p>Point your AI client at one Streamable HTTP MCP endpoint and complete its browser authorization flow.</p></div></li>
+    <li><span>02</span><div><h3>Search before loading</h3><p>Compact search controls find relevant tools. Full tool schemas load only when the agent needs them.</p></div></li>
+    <li><span>03</span><div><h3>Call by exact name</h3><p>The gateway routes the call to the selected remote provider while provider credentials stay encrypted and server-side.</p></div></li>
+    <li><span>04</span><div><h3>Govern centrally</h3><p>Writes require an explicit per-integration toggle. Revoke access or reconnect provider credentials from one dashboard.</p></div></li>
+  </ol>
+</section>
+
+<section class="landing-section compatibility" aria-labelledby="compatibility-heading">
+  <div class="section-intro">
+    <p class="section-number">03 — Fits the clients you use</p>
+    <h2 id="compatibility-heading">For developers and teams connecting AI clients to remote MCP providers.</h2>
+  </div>
+  <div class="compatibility-grid">
+    <div>
+      <h3>Clients</h3>
+      <ul class="name-list" aria-label="Supported clients">
+        <li>Claude Code / Desktop</li><li>Cursor</li><li>VS Code / Copilot</li><li>Codex CLI</li>
+        <li>OpenCode</li><li>Gemini CLI</li><li>Windsurf</li><li>Streamable HTTP MCP clients</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Providers today</h3>
+      <ul class="provider-list">
+        <li><strong>GitLab</strong><span>Direct provider integration.</span></li>
+        <li><strong>Remote OAuth MCP</strong><span>Generic Streamable HTTP connection.</span></li>
+        <li><strong>Custom-header MCP</strong><span>Generic Streamable HTTP connection.</span></li>
+      </ul>
+      <a class="arrow-link" href="{% url 'docs' %}">See client setup instructions <span aria-hidden="true">→</span></a>
+    </div>
+  </div>
+</section>
+
+<section class="security-section landing-section" aria-labelledby="security-heading">
+  <div class="section-intro">
+    <p class="section-number">04 — Security by construction</p>
+    <h2 id="security-heading">Secrets stay behind the gateway.</h2>
+    <p class="section-copy">Concrete controls, not certification badges or borrowed trust.</p>
+  </div>
+  <div class="security-grid">
+    <article><span>Hash</span><h3>Tokens are not stored in plain text</h3><p>Gateway, OAuth, and credential-setup tokens are stored as hashes.</p></article>
+    <article><span>Encrypt</span><h3>Provider credentials remain private</h3><p>OAuth credentials, GitLab tokens, and custom headers are encrypted server-side.</p></article>
+    <article><span>Expire</span><h3>Setup links close quickly</h3><p>Credential setup links are one-use and expire after 15 minutes.</p></article>
+    <article><span>Block</span><h3>Public mode rejects unsafe targets</h3><p>SSRF protections block private and otherwise unsafe upstream destinations.</p></article>
+    <article><span>Bound</span><h3>Upstreams have limits</h3><p>Provider requests use bounded responses and timeouts rather than open-ended reads.</p></article>
+    <article><span>Redact</span><h3>Security events avoid secrets</h3><p>Recorded security events redact credential-like and token-like values.</p></article>
+  </div>
+</section>
+
+<section class="cloud-band" aria-labelledby="cloud-heading">
+  <div>
+    <p class="eyebrow">Managed cloud · free beta</p>
+    <h2 id="cloud-heading">Operate tools.<br>Not the gateway.</h2>
+  </div>
+  <div>
+    <p>Join the managed cloud beta at no cost. Beta users receive 50% off their first 12 paid months after beta.</p>
+    <p class="cloud-note">Final cloud pricing will be announced before the beta ends.</p>
+    {% if cloud_mode %}
+      {% if user.is_authenticated %}<a class="button light" href="{% url 'dashboard' %}">Open dashboard</a>
+      {% else %}<a class="button light" href="{% url 'account_signup' %}">Join the free beta</a>{% endif %}
+    {% else %}
+      <span class="offer-status">Self-host release coming soon</span>
+    {% endif %}
+  </div>
+</section>
+
+<section class="landing-section pricing-section" aria-labelledby="pricing-heading">
+  <div class="section-intro">
+    <p class="section-number">05 — Choose who operates it</p>
+    <h2 id="pricing-heading">A clear path now.<br>No invented price later.</h2>
+  </div>
+  <div class="offer-list">
+    <article class="offer featured">
+      <div><p class="offer-kicker">Managed cloud</p><h3>Free beta</h3></div>
+      <p>Juraguard operated for you. Final cloud pricing announced before beta ends; beta users get 50% off their first 12 paid months.</p>
+      {% if cloud_mode %}
+        {% if user.is_authenticated %}<a class="arrow-link" href="{% url 'dashboard' %}">Open dashboard <span aria-hidden="true">→</span></a>
+        {% else %}<a class="arrow-link" href="{% url 'account_signup' %}">Join the free beta <span aria-hidden="true">→</span></a>{% endif %}
+      {% else %}
+        <span class="offer-status">Available on the managed service</span>
+      {% endif %}
+    </article>
+    <article class="offer">
+      <div><p class="offer-kicker">Self-host · personal</p><h3>AGPL-3.0</h3></div>
+      <p>Run Juraguard with Docker on one host. SQLite is the default; PostgreSQL is optional for deployments that need it.</p>
+      <span class="offer-status">Public self-host release coming soon</span>
+    </article>
+    <article class="offer">
+      <div><p class="offer-kicker">Self-host · organization</p><h3>Organization controls</h3></div>
+      <p>All code is AGPL-3.0. Current builds use a commercial license key to enable organization controls. Contact Pyango for a key.</p>
+      <a class="arrow-link" href="mailto:info@pyango.ch">Ask about organization licensing <span aria-hidden="true">→</span></a>
+    </article>
+  </div>
+</section>
+
+<section class="landing-section faq-section" aria-labelledby="faq-heading">
+  <div class="section-intro">
+    <p class="section-number">06 — Questions, answered</p>
+    <h2 id="faq-heading">Before you connect.</h2>
+  </div>
+  <div class="faq-list">
+    <details><summary>Where do provider credentials live?</summary><p>Encrypted on the Juraguard server. AI clients use the gateway endpoint and do not receive the saved OAuth credentials, GitLab tokens, or custom headers.</p></details>
+    <details><summary>Can I self-host Juraguard?</summary><p>Yes. The AGPL-3.0 application has a Docker one-host installer, uses SQLite by default, and can use PostgreSQL. Container deployments are the supported path during public beta. Follow the self-host documentation for production deployment rather than exposing a development container port.</p></details>
+    <details><summary>Which providers and clients work today?</summary><p>Providers are GitLab directly, plus generic remote OAuth or custom-header Streamable HTTP MCP servers. Documented clients include Claude Code/Desktop, Cursor, VS Code/Copilot, Codex CLI, OpenCode, Gemini CLI, and Windsurf; other compatible Streamable HTTP MCP clients can connect too.</p></details>
+    <details><summary>Can an agent write to a provider by default?</summary><p>Not through an integration unless its write toggle is explicitly enabled. You can turn writes off again, revoke client access, or reconnect provider credentials centrally.</p></details>
+    <details><summary>What happens after the managed beta?</summary><p>Final cloud pricing will be announced before beta ends. Beta users receive 50% off their first 12 paid months; there is no final monthly price to announce yet.</p></details>
+    <details><summary>What if commercial license validation is temporarily unavailable?</summary><p>A previously validated, signed organization license can remain usable for its configured outage grace period. Personal features need no commercial license and are unaffected by license-server availability. All source remains AGPL-3.0.</p></details>
+  </div>
+</section>
+
+<section class="closing-cta landing-shell" aria-labelledby="closing-heading">
+  <p class="eyebrow">One endpoint. Credentials under control.</p>
+  <h2 id="closing-heading">Give agents the tool they need—when they need it.</h2>
+  <div class="actions">
+    {% if user.is_authenticated %}
+      <a class="button primary" href="{% url 'dashboard' %}">Open dashboard</a>
+    {% elif cloud_mode %}
+      <a class="button primary" href="{% url 'account_signup' %}">Join the free beta</a>
+    {% else %}
+      <span>Use the private setup link printed during installation.</span>
+    {% endif %}
+    <a class="button secondary" href="{% url 'docs' %}">Read the docs</a>
+    <span>Public source mirror coming soon</span>
+  </div>
+</section>
+{% endblock %}

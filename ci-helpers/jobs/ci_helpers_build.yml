@@ -1,0 +1,25 @@
+ci-helpers-mr:
+  stage: build
+  extends: .mr
+  rules:
+    - if: $CI_MERGE_REQUEST_IID
+  variables:
+    CONTEXT: "ci-helpers/docker"
+
+ci-helpers:
+  stage: build
+  extends: .branch
+  variables:
+    CONTEXT: "ci-helpers/docker"
+
+backup-mr:
+  stage: build
+  extends: .mr
+  variables:
+    CONTEXT: "ci-helpers/backup"
+
+backup:
+  stage: build
+  extends: .branch
+  variables:
+    CONTEXT: "ci-helpers/backup"

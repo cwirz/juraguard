@@ -1,0 +1,31 @@
+{% extends "gateway/base.html" %}
+{% block title %}Approve MCP access · {{ product_name }}{% endblock %}
+{% block content %}
+<section class="form-shell" aria-labelledby="approval-heading">
+  <p class="eyebrow">OAuth authorization</p>
+  <h1 id="approval-heading">Approve MCP access</h1>
+  <p class="lede-small"><strong>{{ client.client_name|default:client.client_id }}</strong> requests access to your Juraguard MCP gateway.</p>
+  <p>Authorization returns to <strong>{{ redirect_host }}</strong> at <code>{{ redirect_uri }}</code>.</p>
+  {% if localhost_redirect %}
+    <p><strong>Localhost warning:</strong> approve only if you started a client on this device.</p>
+  {% endif %}
+  <p>Only approve clients you started connecting. You can revoke issued tokens at any time.</p>
+  <p><strong>Requested permissions</strong> (<code>{{ scope }}</code>):</p>
+  <ul>{% for permission in permissions %}<li>{{ permission }}</li>{% endfor %}</ul>
+  <form method="post" class="stacked-form">
+    {% csrf_token %}
+    <input type="hidden" name="response_type" value="code">
+    <input type="hidden" name="client_id" value="{{ params.client_id }}">
+    <input type="hidden" name="redirect_uri" value="{{ params.redirect_uri }}">
+    <input type="hidden" name="resource" value="{{ params.resource }}">
+    <input type="hidden" name="code_challenge" value="{{ params.code_challenge }}">
+    <input type="hidden" name="code_challenge_method" value="S256">
+    <input type="hidden" name="state" value="{{ params.state|default:'' }}">
+    <input type="hidden" name="scope" value="{{ scope }}">
+    <div class="card-actions">
+      <button class="button primary" name="decision" value="approve">Approve</button>
+      <button class="button secondary" name="decision" value="deny">Deny</button>
+    </div>
+  </form>
+</section>
+{% endblock %}

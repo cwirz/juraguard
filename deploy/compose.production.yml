@@ -1,0 +1,70 @@
+services:
+  traefik:
+    image: traefik:v3.6.6@sha256:82d3d16dde0474a51fef00b28de143d48b67f7a27453224d5e7b5aaefff26a97
+    restart: unless-stopped
+    command:
+      - --api.dashboard=false
+      - --providers.file.filename=/etc/traefik/dynamic.yml
+      - --entrypoints.web.address=:80
+      - --entrypoints.web.http.redirections.entrypoint.to=websecure
+      - --entrypoints.web.http.redirections.entrypoint.scheme=https
+      - --entrypoints.websecure.address=:443
+      - --certificatesresolvers.letsencrypt.acme.httpchallenge=true
+      - --certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web
+      - --certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json
+      - --ping=true
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ${TRAEFIK_DYNAMIC_CONFIG:-/etc/juraguard/traefik-dynamic.yml}:/etc/traefik/dynamic.yml:ro
+      - /var/lib/juraguard/traefik:/letsencrypt
+    depends_on:
+      juraguard:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "traefik", "healthcheck", "--ping"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    logging: &logging
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+  juraguard:
+    image: "${JURAGUARD_IMAGE:?set JURAGUARD_IMAGE}"
+    restart: unless-stopped
+    environment:
+      ALLOWED_HOSTS: "${JURAGUARD_DOMAIN},127.0.0.1"
+      CSRF_TRUSTED_ORIGINS: "https://${JURAGUARD_DOMAIN}"
+      MCP_ALLOWED_ORIGINS: "https://${JURAGUARD_DOMAIN}"
+      PUBLIC_BASE_URL: "https://${JURAGUARD_DOMAIN}"
+      DEPLOYMENT_MODE: self_hosted
+      DJANGO_SECRET_KEY: "${DJANGO_SECRET_KEY:?set DJANGO_SECRET_KEY}"
+      CREDENTIAL_ENCRYPTION_KEYS: "${CREDENTIAL_ENCRYPTION_KEYS:-}"
+      LICENSE_ENCRYPTION_KEYS: "${LICENSE_ENCRYPTION_KEYS:-}"
+      DATABASE_URL: "${DATABASE_URL:-}"
+      EMAIL_BACKEND: "${EMAIL_BACKEND:-django.core.mail.backends.smtp.EmailBackend}"
+      EMAIL_HOST: "${EMAIL_HOST:-localhost}"
+      EMAIL_PORT: "${EMAIL_PORT:-25}"
+      EMAIL_HOST_USER: "${EMAIL_HOST_USER:-}"
+      EMAIL_HOST_PASSWORD: "${EMAIL_HOST_PASSWORD:-}"
+      EMAIL_USE_TLS: "${EMAIL_USE_TLS:-false}"
+      DEFAULT_FROM_EMAIL: "${DEFAULT_FROM_EMAIL:-noreply@localhost}"
+      SESSION_COOKIE_SECURE: "true"
+      CSRF_COOKIE_SECURE: "true"
+      SECURE_SSL_REDIRECT: "true"
+      SECURE_HSTS_SECONDS: "31536000"
+      TRUST_PROXY_HEADERS: "true"
+    expose:
+      - "8000"
+    volumes:
+      - /var/lib/juraguard/data:/data
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health/', timeout=2)"]
+      interval: 30s
+      timeout: 5s
+      start_period: 20s
+      retries: 3
+    logging: *logging

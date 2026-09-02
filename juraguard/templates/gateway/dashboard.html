@@ -1,0 +1,55 @@
+{% extends "gateway/base.html" %}
+{% block title %}Dashboard · {{ product_name }}{% endblock %}
+{% block content %}
+<header class="page-heading">
+  <div><p class="eyebrow">Control room</p><h1>Your gateway</h1></div>
+  <a class="button primary" href="{% url 'integration_create' %}">Add integration</a>
+</header>
+
+<section class="token-panel" aria-labelledby="token-heading"{% if shown_token %} data-replace-url="{% url 'dashboard' %}"{% endif %}>
+  <div><p class="section-number">Gateway access</p><h2 id="token-heading">MCP client access</h2><p>OAuth is recommended and starts automatically in compatible clients. Manual bearer tokens remain available as fallback.</p></div>
+  {% if shown_token %}
+    <div class="secret"><code>{{ shown_token }}</code><button data-copy>Copy token</button></div>
+  {% else %}
+    <p class="status">{% if token_exists %}<span class="dot live"></span> Token active and hidden{% else %}<span class="dot"></span> No token generated{% endif %}</p>
+  {% endif %}
+  <form action="{% url 'rotate_token' %}" method="post">{% csrf_token %}<button class="button secondary">{% if token_exists %}Rotate token{% else %}Generate token{% endif %}</button></form>
+  <a class="text-link" href="{% url 'oauth_clients' %}">Manage OAuth clients</a>
+</section>
+
+<section class="token-panel" aria-labelledby="organization-heading">
+  <div><p class="section-number">Commercial feature</p><h2 id="organization-heading">Organization controls</h2>
+    {% if organization_controls %}<p>Entitlement active. Organization controls are available.</p>
+    {% else %}<p>Locked. Add a commercial license or active cloud subscription to unlock this feature.</p>{% endif %}
+  </div>
+  {% if organization_controls %}<a class="button secondary" href="{% url 'organization_controls' %}">Open controls</a>
+  {% elif cloud_mode and billing_enabled %}<a class="button secondary" href="{% url 'billing' %}">View billing</a>
+  {% elif not cloud_mode %}<a class="button secondary" href="{% url 'license' %}">Manage license</a>{% endif %}
+</section>
+
+<section aria-labelledby="integrations-heading">
+  <div class="section-heading"><div><p class="section-number">Connected systems</p><h2 id="integrations-heading">Integrations</h2></div><span>{{ integrations|length|stringformat:"02d" }}</span></div>
+  {% if integrations %}
+    <div class="integration-list">
+      {% for integration in integrations %}
+      <article class="integration-card">
+        <div class="integration-main"><span class="status-mark {% if integration.active and integration.connected %}active{% endif %}" aria-hidden="true"></span><div><h3>{{ integration.name }}</h3><p>{{ integration.get_provider_type_display }} · {{ integration.description|default:"No description" }}</p><code>{{ integration.slug }} · {{ integration.endpoint_url }}</code></div></div>
+        <p class="tool-count">{{ integration.tool_catalog|length }}<small>{{ integration.get_provider_type_display }} actions ready</small></p>
+        {% if integration.tool_catalog %}<details><summary>View actions</summary>
+          <ul>{% for tool in integration.tool_catalog %}<li class="secret"><code>{{ integration.slug }}__{{ tool.name }}</code><button type="button" data-copy>Copy</button></li>{% endfor %}</ul>
+        </details>{% endif %}
+        <div class="card-actions">
+          <a class="text-link" href="{% url 'integration_edit' integration.pk %}">Edit</a>
+          <form method="post" action="{% url 'integration_toggle' integration.pk %}">{% csrf_token %}<button>{% if integration.active %}Disable{% else %}Enable{% endif %}</button></form>
+          <form method="post" action="{% url 'integration_reconnect' integration.pk %}">{% csrf_token %}<button>Reconnect</button></form>
+          <form method="post" action="{% url 'integration_test' integration.pk %}">{% csrf_token %}<button>Test connection</button></form>
+          <form method="post" action="{% url 'integration_delete' integration.pk %}" onsubmit="return confirm('Delete this integration?')">{% csrf_token %}<button class="danger">Delete</button></form>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty"><p class="cross">+</p><h3>No integrations yet</h3><p>Add a remote Streamable HTTP MCP server. Credentials stay out of agent conversations.</p></div>
+  {% endif %}
+</section>
+{% endblock %}

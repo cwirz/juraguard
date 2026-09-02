@@ -1,0 +1,5 @@
+include:
+  - local: "ci-helpers/jobs/general.yml"
+  - local: "ci-helpers/jobs/ci_helpers_build.yml"
+  - local: "ci-helpers/hetzner/hetzner_scripts.yml"
+  - local: "ci-helpers/hetzner/hetzner_deploy.yml"

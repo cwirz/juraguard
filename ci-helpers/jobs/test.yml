@@ -1,0 +1,30 @@
+.test:
+  stage: test
+  tags:
+    - build
+  coverage: /^TOTAL\s*:\s*([^%]+)/
+  script:
+    - docker compose -p "$CI_PIPELINE_ID" -f docker-compose.test.yml run app sh /scripts/test.sh
+  artifacts:
+    when: on_success
+    paths:
+      - $CONTEXT/htmlcov
+    expire_in: 1 hour
+
+.pages-test:
+  stage: test
+  needs:
+    - job: test
+      artifacts: true
+  tags:
+    - build
+  script:
+    - mkdir -p ../public/$CI_COMMIT_REF_SLUG/tests
+    - mv htmlcov/* ../public/$CI_COMMIT_REF_SLUG/tests
+  environment:
+    name: pages/$CI_COMMIT_REF_SLUG/$CONTEXT/coverage-report
+    url: $CI_PAGES_URL/$CI_COMMIT_REF_SLUG/tests
+  artifacts:
+    paths:
+      - public
+    expire_in: 1 week

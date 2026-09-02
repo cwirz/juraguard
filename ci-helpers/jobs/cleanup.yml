@@ -1,0 +1,8 @@
+.cleanup:
+  stage: cleanup
+  tags:
+    - build
+  when: always
+  script:
+    - docker compose -p "$CI_PIPELINE_ID" -f docker-compose.test.yml down --remove-orphans
+    - docker rmi -f "$CI_PIPELINE_ID/$CONTEXT":"$CI_COMMIT_REF_SLUG"

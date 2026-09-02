@@ -1,0 +1,14 @@
+check_branch_length:
+  stage: build
+  tags:
+    - build
+  rules:
+    - if: $CI_MERGE_REQUEST_IID
+  script:
+    - echo "CI_COMMIT_REF_SLUG is '${CI_COMMIT_REF_SLUG}' with length ${#CI_COMMIT_REF_SLUG}"
+    - |
+      if [ ${#CI_COMMIT_REF_SLUG} -ge 25 ]; then
+        echo "branch name length exceeds 25 characters (is ${#CI_COMMIT_REF_SLUG}), risk of domain name issues"
+        exit 1
+      fi
+  allow_failure: true

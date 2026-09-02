@@ -1,0 +1,29 @@
+.review:
+  stage: review
+  before_script:
+    - source $CI_PROJECT_DIR/ci-helpers/scripts/resolve_branch_hash.sh
+    - source $CI_PROJECT_DIR/ci-helpers/scripts/docker_login.sh
+    - cd $CONTEXT
+    - docker network create $NETWORK_NAME || true
+  script:
+    - echo "deploying review version to https://$CONTEXT.$BRANCH_HASH.$DOMAIN"
+    - echo "container name to check reviewapp-$CI_COMMIT_SHA on the review app server"
+    - echo "create/restart/update review app"
+
+    - run_with_dockerhub_fallback docker compose -f docker-compose.deploy.reviewapp.yml pull
+    # Do not add --volumes: review databases must survive redeploys.
+    - docker compose -f docker-compose.deploy.reviewapp.yml down --remove-orphans
+    - docker compose -f docker-compose.deploy.reviewapp.yml up -d
+    - echo "REVIEW_APP_URL=https://$CONTEXT.$BRANCH_HASH.$DOMAIN" >> $CI_PROJECT_DIR/review.env
+  artifacts:
+    reports:
+      dotenv: review.env
+  environment:
+    name: test/$CI_COMMIT_REF_SLUG/$CONTEXT
+    url: $REVIEW_APP_URL
+  rules:
+    - if: $CI_MERGE_REQUEST_IID && $CI_MERGE_REQUEST_SOURCE_PROJECT_ID == $CI_PROJECT_ID && $CI_MERGE_REQUEST_LABELS =~ /(^|,)review-app(,|$)/
+  tags:
+    - $CI_MERGE_REQUEST_IID
+  resource_group: review/$CI_COMMIT_REF_SLUG/$CONTEXT
+  dependencies: [ ]

@@ -1,0 +1,14 @@
+* @cwirz @slim @melek
+
+# Security and release changes require an accountable maintainer review.
+/juraguard/gateway/security.py @cwirz @slim @melek
+/juraguard/gateway/outbound.py @cwirz @slim @melek
+/juraguard/gateway/oauth_server.py @cwirz @slim @melek
+/juraguard/gateway/dispatch.py @cwirz @slim @melek
+/juraguard/config/settings.py @cwirz @slim @melek
+/.gitlab-ci.yml @cwirz @slim @melek
+/ci-helpers/ @cwirz @slim @melek
+/.github/workflows/ @cwirz @slim @melek
+/deploy/ @cwirz @slim @melek
+/LICENSE @cwirz @slim @melek
+/SECURITY.md @cwirz @slim @melek

@@ -1,0 +1,12 @@
+{% extends "gateway/base.html" %}
+{% block title %}License · {{ product_name }}{% endblock %}
+{% block content %}
+<header class="page-heading"><div><p class="eyebrow">Self-hosted commercial features</p><h1>License</h1></div></header>
+<section class="token-panel"><div><h2>License status</h2>
+  {% if claims %}<p><strong>{{ claims.organization }}</strong> · {{ license.status|title }}</p><p>Entitlements: {{ claims.entitlements|join:", " }}</p><p>Valid until: {{ claims.exp }}</p>
+  {% elif license.encrypted_key %}<p>Installed · {{ license.status|default:"Pending"|title }}. {{ license.last_error }}</p>{% else %}<p>No commercial license installed. The personal gateway remains fully available.</p>{% endif %}
+  {% if license.validated_at %}<p>Last validated: {{ license.validated_at }}{% if license.grace_deadline %} · outage grace until {{ license.grace_deadline }}{% endif %}</p>{% endif %}</div>
+</section>
+<section class="token-panel"><div><h2>Enter or replace license</h2><form method="post">{% csrf_token %}{{ form.as_p }}<button class="button primary">Validate license</button></form></div>
+{% if license.encrypted_key %}<form method="post" action="{% url 'license_remove' %}">{% csrf_token %}<button class="button danger">Remove license</button></form>{% endif %}</section>
+{% endblock %}

@@ -1,0 +1,24 @@
+variables:
+  CS_ANALYZER_IMAGE: "registry.gitlab.pyango.ch/pyango/helios/monorepo/security/container-scanning:8"
+  CS_SCHEMA_MODEL: 15
+  CS_SEVERITY_THRESHOLD: "CRITICAL"
+
+
+.container_scanning:
+  image: "$CS_ANALYZER_IMAGE"
+  stage: test
+  variables:
+    CS_REGISTRY_USER: $GITLAB_ACCESS_USER
+    CS_REGISTRY_PASSWORD: $GITLAB_ACCESS_TOKEN
+    CS_IMAGE: "${CI_REGISTRY_IMAGE}/${CONTEXT}:${CI_COMMIT_REF_SLUG}"
+    GIT_STRATEGY: none
+  allow_failure: true
+  artifacts:
+    access: 'developer'
+    reports:
+      container_scanning: gl-container-scanning-report.json
+      cyclonedx: "**/gl-sbom-*.cdx.json"
+    paths: [ gl-container-scanning-report.json, gl-dependency-scanning-report.json, "**/gl-sbom-*.cdx.json" ]
+  dependencies: [ ]
+  script:
+    - gtcs scan

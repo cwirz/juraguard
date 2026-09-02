@@ -1,0 +1,50 @@
+services:
+  traefik:
+    image: traefik:v3.6.2
+    container_name: traefik
+    restart: unless-stopped
+    command:
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.certresolver.acme.email=info@pyango.ch"
+      - "--certificatesresolvers.certresolver.acme.storage=/letsencrypt/acme.json"
+      - "--certificatesresolvers.certresolver.acme.httpchallenge=true"
+      - "--certificatesresolvers.certresolver.acme.httpchallenge.entrypoint=web"
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - traefik-letsencrypt:/letsencrypt
+
+  juraguard:
+    image: "${CI_REGISTRY_IMAGE}/${CONTEXT}:${CI_COMMIT_SHA}"
+    container_name: juraguard
+    restart: unless-stopped
+    environment:
+      ALLOWED_HOSTS: "$CONTEXT.$BRANCH_HASH.$DOMAIN,127.0.0.1"
+      CSRF_TRUSTED_ORIGINS: "https://$CONTEXT.$BRANCH_HASH.$DOMAIN"
+      MCP_ALLOWED_ORIGINS: "https://$CONTEXT.$BRANCH_HASH.$DOMAIN"
+      PUBLIC_BASE_URL: "https://$CONTEXT.$BRANCH_HASH.$DOMAIN"
+    volumes:
+      - juraguard-data:/data
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.juraguard.rule=Host(`$CONTEXT.$BRANCH_HASH.$DOMAIN`)"
+      - "traefik.http.routers.juraguard.entrypoints=websecure"
+      - "traefik.http.routers.juraguard.tls=true"
+      - "traefik.http.routers.juraguard.tls.certresolver=certresolver"
+      - "traefik.http.services.juraguard.loadbalancer.server.port=8000"
+
+volumes:
+  juraguard-data:
+  traefik-letsencrypt:
+
+networks:
+  default:
+    external: true
+    name: $NETWORK_NAME

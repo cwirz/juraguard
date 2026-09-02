@@ -1,0 +1,34 @@
+.hetzner-scripts:
+  cleanup-server:
+    - |
+      # Find and delete all matching GitLab runners
+      RUNNER_IDS=$(curl --header "PRIVATE-TOKEN: ${GITLAB_ACCESS_TOKEN}" "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/runners" | jq -r ".[] | select(.description == \"$CI_MERGE_REQUEST_IID\") | .id")
+      echo "Found GitLab runners: ${RUNNER_IDS}"
+      for RUNNER_ID in $RUNNER_IDS; do
+        curl --request DELETE --header "PRIVATE-TOKEN: ${GITLAB_ACCESS_TOKEN}" "${CI_API_V4_URL}/runners/${RUNNER_ID}"
+        echo "GitLab runner ${RUNNER_ID} deleted."
+      done
+      if [ -z "$RUNNER_IDS" ]; then
+        echo "No matching GitLab runners found."
+      fi
+    - export SERVER_IP=$(hcloud server ip ${HCLOUD_SERVER_NAME})
+    - export SUBDOMAIN="$CI_COMMIT_REF_SLUG.$CI_PROJECT_TITLE"
+    - bash ./ci-helpers/cleanup_dns.sh
+    - export SUBDOMAIN="*.$CI_COMMIT_REF_SLUG.$CI_PROJECT_TITLE"
+    - bash ./ci-helpers/cleanup_dns.sh
+    - bash ./ci-helpers/cleanup_authentik.sh ${CI_PROJECT_TITLE}-${CI_MERGE_REQUEST_IID} auth.${CI_COMMIT_REF_SLUG}.${DOMAIN}
+    - hcloud server delete ${HCLOUD_SERVER_NAME} || exit_code=$?
+
+  check-server-status:
+    - |
+      if ! hcloud server describe ${HCLOUD_SERVER_NAME} &>/dev/null; then
+        echo "Server ${HCLOUD_SERVER_NAME} does not exist. Continuing..."
+      else
+        LABEL_VALUE=$(hcloud server describe ${HCLOUD_SERVER_NAME} -o format='{{index .Labels "setup"}}')
+        if [ "$LABEL_VALUE" = "complete" ]; then
+          echo "The server ${HCLOUD_SERVER_NAME} exists and has the 'setup' label set to 'complete'."
+          exit 0
+        else
+          echo "The server ${HCLOUD_SERVER_NAME} exists but the 'setup' label is not 'complete'. Continuing..."
+        fi
+      fi

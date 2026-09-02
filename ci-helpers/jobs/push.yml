@@ -1,0 +1,35 @@
+.push:
+  stage: push
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_COMMIT_REF_PROTECTED == "true"'
+    - if: '$CI_COMMIT_REF_PROTECTED == "true" && $CI_COMMIT_TAG =~ /^v?(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-((0|[1-9][0-9]*)|[0-9A-Za-z-]*[A-Za-z-][0-9A-Za-z-]*)(\.((0|[1-9][0-9]*)|[0-9A-Za-z-]*[A-Za-z-][0-9A-Za-z-]*))*)?(\+[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$/'
+  tags:
+    - build
+  dependencies: []
+  before_script:
+    - source $CI_PROJECT_DIR/ci-helpers/scripts/docker_login.sh
+  script:
+    - docker tag "$CI_PIPELINE_ID/$CONTEXT":"$CI_COMMIT_REF_SLUG" "$CI_REGISTRY_IMAGE/$CONTEXT":"$CI_COMMIT_REF_SLUG"
+    - docker push "$CI_REGISTRY_IMAGE/$CONTEXT":"$CI_COMMIT_REF_SLUG"
+
+.push-latest:
+  extends: .push
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_COMMIT_REF_PROTECTED == "true"'
+  script:
+    - docker tag "$CI_PIPELINE_ID/$CONTEXT":"$CI_COMMIT_REF_SLUG" "$CI_REGISTRY_IMAGE/$CONTEXT":latest
+    - docker push "$CI_REGISTRY_IMAGE/$CONTEXT":latest
+
+.push-arm64:
+  extends: .push
+  allow_failure: true
+  script:
+    - docker tag "$CI_PIPELINE_ID/$CONTEXT":"$CI_COMMIT_REF_SLUG-arm64" "$CI_REGISTRY_IMAGE/$CONTEXT":"$CI_COMMIT_REF_SLUG-arm64"
+    - docker push "$CI_REGISTRY_IMAGE/$CONTEXT":"$CI_COMMIT_REF_SLUG-arm64"
+
+.push-latest-arm64:
+  extends: .push-latest
+  allow_failure: true
+  script:
+    - docker tag "$CI_PIPELINE_ID/$CONTEXT":"$CI_COMMIT_REF_SLUG-arm64" "$CI_REGISTRY_IMAGE/$CONTEXT":latest-arm64
+    - docker push "$CI_REGISTRY_IMAGE/$CONTEXT":latest-arm64

@@ -1,0 +1,13 @@
+include:
+  - local: "ci-helpers/root.yml"
+
+juraguard-mr:
+  extends: .mr
+  stage: priority-triggers
+  variables:
+    CONTEXT: "juraguard"
+
+juraguard:
+  extends: .branch
+  variables:
+    CONTEXT: "juraguard"

@@ -1,0 +1,27 @@
+{% extends "gateway/base.html" %}
+{% block title %}OAuth clients · {{ product_name }}{% endblock %}
+{% block content %}
+<header class="page-heading">
+  <div><p class="eyebrow">Gateway access</p><h1>OAuth clients</h1><p>Clients with current access to your gateway.</p></div>
+</header>
+{% if grants %}
+  <div class="integration-list">
+    {% for grant in grants %}
+      <article class="integration-card">
+        <div class="integration-main"><div>
+          <h2>{{ grant.client.client_name|default:grant.client.client_id }}</h2>
+          <p><code>{{ grant.client.client_id }}</code></p>
+          <p>Scope: <code>{{ grant.scope }}</code></p>
+          <p>First granted {{ grant.first_granted_at }} · Last granted {{ grant.last_granted_at }}</p>
+          <p>{% if grant.access_expires_at %}Access expires {{ grant.access_expires_at }}{% endif %}{% if grant.access_expires_at and grant.refresh_expires_at %} · {% endif %}{% if grant.refresh_expires_at %}Refresh expires {{ grant.refresh_expires_at }}{% endif %}</p>
+        </div></div>
+        <form method="post" action="{% url 'oauth_client_revoke' grant.client.pk %}" onsubmit="return confirm('Revoke all access for this client?')">
+          {% csrf_token %}<button class="danger">Revoke access</button>
+        </form>
+      </article>
+    {% endfor %}
+  </div>
+{% else %}
+  <div class="empty"><h2>No active OAuth clients</h2><p>Connected clients will appear here after authorization.</p></div>
+{% endif %}
+{% endblock %}

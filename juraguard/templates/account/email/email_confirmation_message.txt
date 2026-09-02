@@ -1,0 +1,7 @@
+{% extends "account/email/base_message.txt" %}
+{% load account %}
+
+{% block content %}{% autoescape off %}{% user_display user as user_display %}You're receiving this email because user {{ user_display }} registered a JuraGuard account with this email address.
+
+Confirm your email address by opening this link:
+{{ activate_url }}{% endautoescape %}{% endblock content %}

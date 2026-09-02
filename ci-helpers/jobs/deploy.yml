@@ -1,0 +1,19 @@
+.deploy:
+  stage: deploy
+  tags:
+    - production
+  rules:
+    - if: '$CI_COMMIT_REF_PROTECTED == "true" && $CI_COMMIT_TAG =~ /^v?(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-((0|[1-9][0-9]*)|[0-9A-Za-z-]*[A-Za-z-][0-9A-Za-z-]*)(\.((0|[1-9][0-9]*)|[0-9A-Za-z-]*[A-Za-z-][0-9A-Za-z-]*))*)?(\+[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$/'
+  environment:
+    name: production
+  dependencies: []
+  before_script:
+    - source $CI_PROJECT_DIR/ci-helpers/scripts/docker_login.sh
+    - cd $CONTEXT
+    - docker network create $NETWORK_NAME || true
+  script:
+    - echo "deploying $CI_COMMIT_REF_SLUG to $DOMAIN"
+
+    - run_with_dockerhub_fallback docker compose -f docker-compose.deploy.yml pull
+    - docker compose -f docker-compose.deploy.yml down --remove-orphans
+    - docker compose -f docker-compose.deploy.yml up -d

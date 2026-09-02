@@ -1,0 +1,12 @@
+include:
+  - local: "ci-helpers/jobs/initialize.yml"
+  - local: "ci-helpers/jobs/pull.yml"
+  - local: "ci-helpers/jobs/build.yml"
+  - local: "ci-helpers/jobs/push.yml"
+  - local: "ci-helpers/jobs/lint.yml"
+  - local: "ci-helpers/jobs/test.yml"
+  - local: "ci-helpers/jobs/pages.yml"
+  - local: "ci-helpers/jobs/security.yml"
+  - local: "ci-helpers/jobs/cleanup.yml"
+  - local: "ci-helpers/jobs/deploy.yml"
+  - local: "ci-helpers/jobs/reviewapp.yml"

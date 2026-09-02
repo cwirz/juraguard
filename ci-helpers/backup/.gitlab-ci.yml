@@ -1,0 +1,35 @@
+include:
+  - local: "ci-helpers/jobs/all.yml"
+
+stages:
+  - pull
+  - build
+  - push
+  - cleanup
+
+before_script:
+  - cd ci-helpers/backup
+
+workflow:
+  name: $CONTEXT
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "parent_pipeline"
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+      when: never
+
+pull:
+  extends: .pull
+
+build:
+  extends: .build
+
+push:
+  extends: .push
+
+push-latest:
+  extends: .push-latest
+
+cleanup:
+  extends: .cleanup
+  script:
+    - docker rmi -f "$CI_PIPELINE_ID/$CONTEXT":"$CI_COMMIT_REF_SLUG"

@@ -1,0 +1,12 @@
+services:
+  juraguard:
+    build: .
+    image: juraguard:local
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      - juraguard-data:/data
+
+volumes:
+  juraguard-data:

@@ -1,0 +1,42 @@
+services:
+  juraguard:
+    image: "${CI_REGISTRY_IMAGE}/${CONTEXT}:${CI_COMMIT_REF_SLUG}"
+    container_name: juraguard
+    restart: unless-stopped
+    environment:
+      # Production defaults
+      - ALLOWED_HOSTS=$PRODUCTION_HOST,127.0.0.1
+      - CSRF_TRUSTED_ORIGINS=https://$PRODUCTION_HOST
+      - MCP_ALLOWED_ORIGINS=https://$PRODUCTION_HOST
+      - PUBLIC_BASE_URL=https://$PRODUCTION_HOST
+      - DEPLOYMENT_MODE=cloud
+      - CLOUD_BETA_ACCESS=true
+      - POLAR_BILLING_ENABLED=false
+      - TRUST_PROXY_HEADERS=true
+      - EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
+      - DJANGO_SECRET_KEY=$SECRET_KEY
+      # Values from GitLab CI/CD variables
+      - DATABASE_URL
+      - CREDENTIAL_ENCRYPTION_KEYS
+      - EMAIL_HOST
+      - EMAIL_PORT
+      - EMAIL_HOST_USER
+      - EMAIL_HOST_PASSWORD
+      - EMAIL_USE_TLS
+      - DEFAULT_FROM_EMAIL
+    volumes:
+      - juraguard-data:/data
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.juraguard.rule=Host(`$PRODUCTION_HOST`)"
+      - "traefik.http.routers.juraguard.entrypoints=websecure"
+      - "traefik.http.routers.juraguard.tls.certresolver=certresolver"
+      - "traefik.http.services.juraguard.loadbalancer.server.port=8000"
+
+volumes:
+  juraguard-data:
+
+networks:
+  default:
+    external: true
+    name: $NETWORK_NAME

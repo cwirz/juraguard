@@ -1,0 +1,9 @@
+.data/
+.venv/
+__pycache__/
+*.py[cod]
+.coverage
+.ruff_cache/
+.DS_Store
+.env*
+!.env.example

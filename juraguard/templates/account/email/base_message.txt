@@ -1,0 +1,5 @@
+Hello from JuraGuard!
+
+{% block content %}{% endblock content %}
+
+Thank you for using JuraGuard!

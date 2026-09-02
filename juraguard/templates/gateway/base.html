@@ -1,0 +1,39 @@
+{% load static %}<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Juraguard is a managed-cloud and self-hosted gateway that gives AI clients one governed Streamable HTTP endpoint for remote MCP providers.">
+  <title>{% block title %}{{ product_name }}{% endblock %}</title>
+  <link rel="icon" href="{% static 'gateway/favicon.svg' %}" type="image/svg+xml">
+  <link rel="stylesheet" href="{% static 'gateway/base.css' %}">
+  <link rel="stylesheet" href="{% static 'gateway/pages.css' %}">
+  <script src="{% static 'gateway/app.js' %}" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header">
+    <a class="wordmark" href="{% url 'landing' %}" aria-label="{{ product_name }} home">
+      <span class="mark" aria-hidden="true">+</span>{{ product_name }}
+    </a>
+    <nav aria-label="Primary navigation">
+      <a href="{% url 'docs' %}">Docs</a>
+      {% if user.is_authenticated %}
+        <a href="{% url 'dashboard' %}">Dashboard</a>
+        <a href="{% url 'oauth_clients' %}">OAuth clients</a>
+        {% if cloud_mode and billing_enabled %}<a href="{% url 'billing' %}">Billing</a>{% elif not cloud_mode %}<a href="{% url 'license' %}">License</a>{% endif %}
+        <form action="{% url 'logout' %}" method="post">{% csrf_token %}<button class="nav-button">Log out</button></form>
+      {% else %}
+        {% if cloud_mode %}<a href="{% url 'account_signup' %}">Sign up</a>{% endif %}
+        <a href="{% if cloud_mode %}{% url 'account_login' %}{% else %}{% url 'login' %}{% endif %}">Log in</a>
+      {% endif %}
+    </nav>
+  </header>
+  {% if messages %}<aside class="messages" aria-label="Notifications">{% for message in messages %}<p>{{ message }}</p>{% endfor %}</aside>{% endif %}
+  <main id="main">{% block content %}{% endblock %}</main>
+  <footer>
+    <span>{{ product_name }} · Swiss-built infrastructure</span>
+    <span><a href="https://github.com/cwirz/juraguard">Source</a> · <a href="https://github.com/cwirz/juraguard/blob/master/LICENSE">AGPL-3.0</a> · No warranty</span>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,62 @@
+{
+  "CreatedByVersion": "2.2.0.1",
+  "Schedule": {
+    "ID": 1,
+    "Tags": [
+      "ID=1"
+    ],
+    "Time": "2026-02-02T12:00:00Z",
+    "Repeat": "1D",
+    "LastRun": "0001-01-01T00:00:00Z",
+    "Rule": "AllowedWeekDays=Monday,Tuesday,Wednesday,Thursday,Friday,Saturday,Sunday",
+    "AllowedDays": [
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+      "Sunday"
+    ]
+  },
+  "Backup": {
+    "ID": "1",
+    "ExternalID": null,
+    "Name": "database",
+    "Description": "database",
+    "Tags": [],
+    "TargetURL": "s3://backups/helios?s3-server-name=minio.helios.pyango.ch\u0026use-ssl=true\u0026auth-username=pyango",
+    "DBPath": "/data/Duplicati/STBUOIXCZQ.sqlite",
+    "Sources": [
+      "/database/",
+      "/media-files/"
+    ],
+    "Settings": [
+      {
+        "Filter": "",
+        "Name": "encryption-module",
+        "Value": "aes",
+        "Argument": null
+      },
+      {
+        "Filter": "",
+        "Name": "compression-module",
+        "Value": "zip",
+        "Argument": null
+      },
+      {
+        "Filter": "",
+        "Name": "dblock-size",
+        "Value": "2GB",
+        "Argument": null
+      }
+    ],
+    "Filters": [],
+    "Metadata": {},
+    "IsTemporary": false
+  },
+  "DisplayNames": {
+    "/database/": "database",
+    "/media-files/": "media-files"
+  }
+}

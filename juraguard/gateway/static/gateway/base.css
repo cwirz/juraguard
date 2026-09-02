@@ -1,0 +1,63 @@
+:root {
+  --paper: #f2eee5;
+  --paper-light: #faf8f2;
+  --ink: #171916;
+  --muted: #65665f;
+  --line: #c9c4b8;
+  --red: #d52b28;
+  --red-dark: #a91f1d;
+  --green: #1f7250;
+  --serif: "Iowan Old Style", "Baskerville", "Times New Roman", serif;
+  --sans: "Avenir Next", "Helvetica Neue", sans-serif;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; color: var(--ink); background: var(--paper); font: 1rem/1.6 var(--sans); }
+a { color: inherit; text-underline-offset: .22em; }
+button, input, textarea { font: inherit; }
+button, .button { min-height: 44px; }
+button, .button, a { -webkit-tap-highlight-color: transparent; }
+:focus-visible { outline: 3px solid var(--red); outline-offset: 3px; }
+.skip-link { position: fixed; z-index: 20; top: .5rem; left: .5rem; padding: .6rem 1rem; background: var(--ink); color: white; transform: translateY(-150%); }
+.skip-link:focus { transform: none; }
+.site-header { min-height: 74px; padding: 0 clamp(1.2rem, 5vw, 5rem); display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--line); }
+.wordmark { min-height: 44px; display: flex; gap: .7rem; align-items: center; font-size: .82rem; font-weight: 700; letter-spacing: .15em; text-decoration: none; text-transform: uppercase; }
+.mark { display: grid; place-items: center; width: 28px; height: 28px; background: var(--red); color: white; font-size: 1.3rem; font-weight: 400; }
+.site-header nav { display: flex; align-items: center; gap: clamp(.8rem, 3vw, 2.3rem); }
+.site-header nav a, .nav-button { min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; font-size: .82rem; font-weight: 600; text-decoration: none; }
+.site-header nav form { display: inline; }
+.nav-button { padding: 0; border: 0; background: transparent; cursor: pointer; }
+main { min-height: calc(100vh - 200px); }
+footer { margin-top: 6rem; padding: 2rem clamp(1.2rem, 5vw, 5rem); display: flex; justify-content: space-between; gap: 1rem; border-top: 1px solid var(--line); color: var(--muted); font-size: .78rem; }
+footer a { min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; }
+h1, h2, h3, p { margin-top: 0; }
+h1, h2 { font-family: var(--serif); font-weight: 500; line-height: .98; letter-spacing: -.035em; }
+h1 { font-size: clamp(3rem, 8vw, 7.5rem); }
+h2 { font-size: clamp(2.2rem, 5vw, 4.6rem); }
+h3 { line-height: 1.2; }
+code { font: .88em/1.5 ui-monospace, "SFMono-Regular", Consolas, monospace; overflow-wrap: anywhere; }
+.eyebrow, .section-number { color: var(--red-dark); font-size: .72rem; font-weight: 700; letter-spacing: .17em; text-transform: uppercase; }
+.button { display: inline-flex; align-items: center; justify-content: center; padding: .72rem 1.2rem; border: 1px solid var(--ink); font-size: .82rem; font-weight: 700; letter-spacing: .03em; text-decoration: none; cursor: pointer; }
+.button.primary { border-color: var(--red); color: white; background: var(--red); }
+.button.primary:hover { background: var(--red-dark); }
+.button.secondary { background: transparent; }
+.button.secondary:hover { background: var(--ink); color: var(--paper-light); }
+.messages { margin: 1rem auto 0; width: min(90%, 1100px); padding: .7rem 1rem; border-left: 4px solid var(--green); background: var(--paper-light); }
+.messages p { margin: 0; }
+.actions { display: flex; flex-wrap: wrap; gap: .7rem; }
+.status { color: var(--muted); }
+.dot { display: inline-block; width: .65rem; height: .65rem; margin-right: .4rem; border-radius: 50%; background: var(--muted); }
+.dot.live { background: var(--green); }
+@media (max-width: 650px) {
+  .site-header { padding-inline: 1rem; }
+  .site-header nav { gap: .8rem; }
+  .site-header nav a:first-child { display: none; }
+  footer { flex-direction: column; }
+}
+@media (max-width: 420px) {
+  .site-header { padding-block: .5rem; flex-wrap: wrap; }
+  .site-header nav { width: 100%; justify-content: space-between; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
+}

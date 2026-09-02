@@ -1,0 +1,9 @@
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Documented and test-only placeholders"
+regexes = [
+  '''^YOUR_TOKEN$''',
+  '''^correct-horse-staple-9472$''',
+]

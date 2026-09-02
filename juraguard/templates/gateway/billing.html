@@ -1,0 +1,10 @@
+{% extends "gateway/base.html" %}
+{% block title %}Billing · {{ product_name }}{% endblock %}
+{% block content %}
+<header class="page-heading"><div><p class="eyebrow">Cloud plan</p><h1>Billing</h1></div></header>
+<section class="token-panel"><div><h2>Free beta, then choose your plan</h2><p>Beta access is free. The pre-configured beta offer gives 50% off the first 12 paid months. Prices and tax details are shown securely by Polar.</p></div>
+  <form method="post" action="{% url 'billing_checkout' %}">{% csrf_token %}<input type="hidden" name="plan" value="monthly"><button class="button primary">Choose monthly</button></form>
+  <form method="post" action="{% url 'billing_checkout' %}">{% csrf_token %}<input type="hidden" name="plan" value="annual"><button class="button secondary">Choose annual</button></form>
+</section>
+{% if billing.polar_customer_id %}<section class="token-panel"><div><h2>Existing subscription</h2><p>{{ billing.plan|title }} · {{ billing.status|default:"Pending"|title }}</p></div><form method="post" action="{% url 'billing_portal' %}">{% csrf_token %}<button class="button secondary">Open Polar portal</button></form></section>{% endif %}
+{% endblock %}

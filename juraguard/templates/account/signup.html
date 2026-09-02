@@ -1,0 +1,14 @@
+{% extends "gateway/form_shell.html" %}
+{% load socialaccount %}
+{% block title %}Sign up · {{ product_name }}{% endblock %}
+{% block form_heading %}Create your account{% endblock %}
+{% block form_submit %}Sign up{% endblock %}
+{% block form_after %}
+  <p>Already registered? <a href="{% url 'account_login' %}">Log in</a>.</p>
+  {% get_providers as socialaccount_providers %}
+  {% for provider in socialaccount_providers %}
+    {% if provider.id == "google" or provider.id == "github" %}
+      <p><a class="button secondary" href="{% provider_login_url provider.id %}">Continue with {{ provider.name }}</a></p>
+    {% endif %}
+  {% endfor %}
+{% endblock %}

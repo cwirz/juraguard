@@ -1,0 +1,6 @@
+.lint:
+  stage: lint
+  tags:
+    - build
+  script:
+    - docker compose -p "$CI_PIPELINE_ID" -f docker-compose.test.yml run --no-deps app sh /scripts/lint.sh

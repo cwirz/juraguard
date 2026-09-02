@@ -1,0 +1,60 @@
+{% extends "gateway/base.html" %}
+{% block title %}Client setup · {{ product_name }}{% endblock %}
+{% block content %}
+<header class="docs-hero">
+  <p class="eyebrow">Client field guide</p>
+  <h1>Connect once.<br>Search everything.</h1>
+  <p><strong>OAuth is preferred for every AI client.</strong> Add <code>{{ mcp_url }}</code> without a token or authorization header, then approve access in your browser.</p>
+</header>
+<div class="docs-layout">
+  <nav class="docs-index" aria-label="Client setup sections"><p>Supported clients</p><a href="#claude">Claude</a><a href="#cursor">Cursor</a><a href="#vscode">VS Code / Copilot</a><a href="#codex">Codex CLI</a><a href="#opencode">OpenCode</a><a href="#gemini">Gemini CLI</a><a href="#windsurf">Windsurf</a><a href="#generic">Generic HTTP</a></nav>
+  <div class="docs-content">
+    <section id="claude">
+      <p class="section-number">01</p><h2>Claude Code & Desktop</h2>
+      <p><strong>Claude Code:</strong> add the server, run <code>/mcp</code>, and authenticate <code>juraguard</code>. Verify with <code>claude mcp get juraguard</code>.</p>
+      <pre><code>claude mcp add --transport http juraguard {{ mcp_url }}</code><button data-copy>Copy</button></pre>
+      <p><strong>Claude Desktop:</strong> open <strong>Customize → Connectors → Add custom connector</strong>, enter <code>{{ mcp_url }}</code>, then complete browser approval.</p>
+    </section>
+    <section id="cursor">
+      <p class="section-number">02</p><h2>Cursor</h2>
+      <p>Run the installer and choose HTTP, name <code>juraguard</code>, and URL <code>{{ mcp_url }}</code>. Then run <code>agent mcp login juraguard</code> and <code>agent mcp list</code>.</p>
+      <pre><code>agent mcp add</code><button data-copy>Copy</button></pre>
+    </section>
+    <section id="vscode">
+      <p class="section-number">03</p><h2>VS Code / GitHub Copilot</h2>
+      <p>Run the installer. Connect to open browser approval, then verify with <strong>MCP: List Servers</strong>.</p>
+      <pre><code>code --add-mcp '{"name":"juraguard","type":"http","url":"{{ mcp_url }}"}'</code><button data-copy>Copy</button></pre>
+    </section>
+    <section id="codex">
+      <p class="section-number">04</p><h2>Codex CLI</h2>
+      <p>Run both commands, then verify with <code>codex mcp list</code>.</p>
+      <pre><code>codex mcp add juraguard --url {{ mcp_url }}
+codex mcp login juraguard</code><button data-copy>Copy</button></pre>
+    </section>
+    <section id="opencode">
+      <p class="section-number">05</p><h2>OpenCode</h2>
+      <p>Run one command. OpenCode starts OAuth automatically when you first use Juraguard. To connect immediately, run <code>opencode mcp auth juraguard</code>.</p>
+      <pre><code>opencode mcp add juraguard --url {{ mcp_url }}</code><button data-copy>Copy</button></pre>
+    </section>
+    <section id="gemini">
+      <p class="section-number">06</p><h2>Gemini CLI</h2>
+      <p>Run the installer. Start Gemini, run <code>/mcp auth juraguard</code>, then verify with <code>gemini mcp list</code>.</p>
+      <pre><code>gemini mcp add --transport http juraguard {{ mcp_url }}</code><button data-copy>Copy</button></pre>
+    </section>
+    <section id="windsurf">
+      <p class="section-number">07</p><h2>Windsurf</h2>
+      <p>Windsurf has no supported installer command. Open <strong>Windsurf Settings → Tools → Add Server</strong>, enter <code>{{ mcp_url }}</code>, complete browser approval, then refresh the MCP server list.</p>
+    </section>
+    <section id="generic">
+      <p class="section-number">08</p><h2>Generic Streamable HTTP</h2>
+      <p>Use MCP OAuth when the client supports it. Otherwise generate a manual token from the dashboard and keep it outside version control.</p>
+      <pre><code>curl {{ mcp_url }} \
+  -H 'Authorization: Bearer YOUR_TOKEN' \
+  -H 'Content-Type: application/json' \
+  -H 'MCP-Protocol-Version: 2025-06-18' \
+  -d '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}'</code><button data-copy>Copy</button></pre>
+    </section>
+    <aside class="source-note"><h2>Source & support</h2><p>The public source mirror and issue tracker are coming soon. GitLab remains the authoritative development repository. Juraguard supports remote Streamable HTTP MCP, with no stdio, WebSocket, or SSE GET transport.</p></aside>
+  </div>
+</div>
+{% endblock %}

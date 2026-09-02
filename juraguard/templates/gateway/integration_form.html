@@ -1,0 +1,18 @@
+{% extends "gateway/base.html" %}
+{% block title %}{{ heading }} · {{ product_name }}{% endblock %}
+{% block content %}
+<section class="form-shell">
+  <p class="eyebrow">Secure integration</p><h1>{{ heading }}</h1>
+  <p class="lede-small">Choose a typed provider. OAuth is recommended for compatible remote MCP servers.</p>
+  <form method="post" class="stacked-form" data-integration-form>
+    {% csrf_token %}{{ form.non_field_errors }}
+    {% for field in form %}
+      <div class="field"{% if field.field.provider_fields %} data-provider-fields="{{ field.field.provider_fields }}"{% endif %}>
+        <label for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}
+        {% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}{{ field.errors }}
+      </div>
+    {% endfor %}
+    <button class="button primary">Save and connect</button>
+  </form>
+</section>
+{% endblock %}

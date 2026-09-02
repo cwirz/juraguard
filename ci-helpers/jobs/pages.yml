@@ -1,0 +1,10 @@
+.pages:
+  stage: push
+  tags:
+    - build
+  script: 
+    - mkdir -p ../public/$CI_COMMIT_REF_SLUG
+  artifacts:
+    paths:
+      - public
+    expire_in: 1 week

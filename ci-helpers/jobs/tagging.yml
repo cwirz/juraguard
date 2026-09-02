@@ -1,0 +1,37 @@
+.auto-tagging:
+  stage: tagging
+  needs: ["auto-changelog"]
+  rules:
+    - if: $MAINTAIN_ARM_IMAGE == "true"
+      when: never
+    - if: $MAINTAIN_DOCKER == "true"
+      when: never
+    - if: $MAINTAIN_MINIO == "true"
+      when: never
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  tags:
+    - build
+  script:
+    - bash $CI_PROJECT_DIR/ci-helpers/scripts/auto_tag.sh
+
+.auto-changelog:
+  stage: tagging
+  rules:
+    - if: $MAINTAIN_ARM_IMAGE == "true"
+      when: never
+    - if: $MAINTAIN_DOCKER == "true"
+      when: never
+    - if: $MAINTAIN_MINIO == "true"
+      when: never
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  tags:
+    - build
+  script:
+    - export PROJECT_URL=$(echo $CI_PROJECT_URL | sed 's/https:\/\///g')
+    - bash $CI_PROJECT_DIR/ci-helpers/scripts/auto_changelog.sh
+
+auto-changelog:
+  extends: .auto-changelog
+
+auto-tagging:
+  extends: .auto-tagging

@@ -1,0 +1,13 @@
+.pull:
+  stage: pull
+  tags:
+    - build
+  allow_failure: true
+  before_script:
+    - source $CI_PROJECT_DIR/ci-helpers/scripts/docker_login.sh
+  script:
+    - 'docker pull ${CI_REGISTRY_IMAGE}/${CONTEXT}:latest &>error.txt || true'
+  artifacts:
+    paths:
+      - error.txt
+    expire_in: 30 minutes

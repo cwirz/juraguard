@@ -1,0 +1,101 @@
+include:
+  - local: "ci-helpers/jobs/all.yml"
+
+stages:
+  - pull
+  - build
+  - test
+  - push
+  - deploy
+  - review
+  - cleanup
+
+before_script:
+  - cd $CONTEXT
+
+workflow:
+  name: $CONTEXT
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "parent_pipeline"
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+      when: never
+
+pull:
+  extends: .pull
+
+build:
+  extends: .build
+
+test:
+  stage: test
+  tags: [build]
+  needs: [build]
+  variables:
+    SMOKE_CONTAINER: "juraguard-smoke-$CI_JOB_ID"
+    SMOKE_VOLUME: "juraguard-smoke-$CI_JOB_ID"
+  script:
+    - >-
+      docker run --rm -v "$CI_PROJECT_DIR/$CONTEXT:/app" -w /app
+      -e DATA_DIR=/tmp/juraguard-ci -e PYTHONDONTWRITEBYTECODE=1 -e RUFF_CACHE_DIR=/tmp/ruff-cache
+      python:3.13-slim sh -c
+      'pip install --no-cache-dir --require-hashes -r requirements-dev.lock &&
+      python manage.py check &&
+      python manage.py makemigrations --check --dry-run &&
+      python manage.py test &&
+      ruff check .'
+    - docker volume create "$SMOKE_VOLUME"
+    - docker run --name "$SMOKE_CONTAINER" -d -v "$SMOKE_VOLUME:/data" "$CI_PIPELINE_ID/$CONTEXT:$CI_COMMIT_REF_SLUG"
+    - |
+      wait_for_health() {
+        for attempt in $(seq 1 30); do
+          if docker exec "$SMOKE_CONTAINER" python -c 'import urllib.request; assert urllib.request.urlopen("http://127.0.0.1:8000/health/", timeout=2).status == 200' 2>/dev/null; then
+            return 0
+          fi
+          sleep 1
+        done
+        docker logs "$SMOKE_CONTAINER"
+        return 1
+      }
+      wait_for_health
+    - docker exec "$SMOKE_CONTAINER" python -c 'from pathlib import Path; Path("/data/ci-persistence").write_text("ok")'
+    - docker restart "$SMOKE_CONTAINER"
+    - wait_for_health
+    - docker exec "$SMOKE_CONTAINER" python -c 'from pathlib import Path; assert Path("/data/ci-persistence").read_text() == "ok"'
+  after_script:
+    - docker rm -f "$SMOKE_CONTAINER" 2>/dev/null || true
+    - docker volume rm "$SMOKE_VOLUME" 2>/dev/null || true
+
+push:
+  extends: .push
+  variables:
+    PUBLISH_TAG: $CI_COMMIT_REF_SLUG
+  script:
+    - docker tag "$CI_PIPELINE_ID/$CONTEXT:$CI_COMMIT_REF_SLUG" "$CI_REGISTRY_IMAGE/$CONTEXT:$PUBLISH_TAG"
+    - docker push "$CI_REGISTRY_IMAGE/$CONTEXT:$PUBLISH_TAG"
+  rules:
+    - if: '$CI_MERGE_REQUEST_IID && $CI_MERGE_REQUEST_SOURCE_PROJECT_ID == $CI_PROJECT_ID && $CI_MERGE_REQUEST_LABELS =~ /(^|,)review-app(,|$)/'
+      variables:
+        PUBLISH_TAG: $CI_COMMIT_SHA
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_COMMIT_REF_PROTECTED == "true"'
+    - if: '$CI_COMMIT_REF_PROTECTED == "true" && $CI_COMMIT_TAG =~ /^v?(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-((0|[1-9][0-9]*)|[0-9A-Za-z-]*[A-Za-z-][0-9A-Za-z-]*)(\.((0|[1-9][0-9]*)|[0-9A-Za-z-]*[A-Za-z-][0-9A-Za-z-]*))*)?(\+[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$/'
+      variables:
+        PUBLISH_TAG: $CI_COMMIT_TAG
+
+push-latest:
+  extends: .push-latest
+
+review:
+  extends: .review
+
+deploy-production:
+  extends: .deploy
+  variables:
+    PRODUCTION_HOST: juraguard.pyango.agency
+  environment:
+    name: production
+    url: https://juraguard.pyango.agency
+
+cleanup:
+  extends: .cleanup
+  script:
+    - docker rmi -f "$CI_PIPELINE_ID/$CONTEXT:$CI_COMMIT_REF_SLUG"

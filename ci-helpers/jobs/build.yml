@@ -1,0 +1,23 @@
+.build:
+  stage: build
+  tags:
+    - build
+  retry:
+    max: 2
+    when:
+      - script_failure
+      - runner_system_failure
+      - stuck_or_timeout_failure
+  script:
+    - |
+      if [[ $( cat error.txt | grep Error | wc -l) -gt 0 ]]; then
+        docker build --tag="$CI_PIPELINE_ID/$CONTEXT":"$CI_COMMIT_REF_SLUG" . ;
+      else
+        docker build --tag="$CI_PIPELINE_ID/$CONTEXT":"$CI_COMMIT_REF_SLUG" --cache-from="$CI_REGISTRY_IMAGE/$CONTEXT":latest --pull . ;
+      fi
+
+.build-arm64:
+  extends: .build
+  allow_failure: true
+  script:
+    - docker buildx build --platform linux/arm64 --load --tag="$CI_PIPELINE_ID/$CONTEXT":"$CI_COMMIT_REF_SLUG-arm64" .
